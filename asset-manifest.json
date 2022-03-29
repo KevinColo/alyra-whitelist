@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/alyra-whitelist/static/css/main.b100e6da.chunk.css",
+    "main.js": "/alyra-whitelist/static/js/main.0ead87cf.chunk.js",
+    "main.js.map": "/alyra-whitelist/static/js/main.0ead87cf.chunk.js.map",
+    "runtime-main.js": "/alyra-whitelist/static/js/runtime-main.09dc6773.js",
+    "runtime-main.js.map": "/alyra-whitelist/static/js/runtime-main.09dc6773.js.map",
+    "static/css/2.3661fc73.chunk.css": "/alyra-whitelist/static/css/2.3661fc73.chunk.css",
+    "static/js/2.df1fe3f2.chunk.js": "/alyra-whitelist/static/js/2.df1fe3f2.chunk.js",
+    "static/js/2.df1fe3f2.chunk.js.map": "/alyra-whitelist/static/js/2.df1fe3f2.chunk.js.map",
+    "index.html": "/alyra-whitelist/index.html",
+    "precache-manifest.dc7095129b6420022d2b98314db26552.js": "/alyra-whitelist/precache-manifest.dc7095129b6420022d2b98314db26552.js",
+    "service-worker.js": "/alyra-whitelist/service-worker.js",
+    "static/css/2.3661fc73.chunk.css.map": "/alyra-whitelist/static/css/2.3661fc73.chunk.css.map",
+    "static/css/main.b100e6da.chunk.css.map": "/alyra-whitelist/static/css/main.b100e6da.chunk.css.map"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.09dc6773.js",
+    "static/css/2.3661fc73.chunk.css",
+    "static/js/2.df1fe3f2.chunk.js",
+    "static/css/main.b100e6da.chunk.css",
+    "static/js/main.0ead87cf.chunk.js"
+  ]
+}
