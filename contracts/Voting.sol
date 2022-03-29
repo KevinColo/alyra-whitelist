@@ -33,7 +33,7 @@ contract Voting is Ownable {
    
     event VoterRegistered(address voterAddress);
     event ProposalRegistered(uint proposalId);
-    event Voted (address voter, uint proposalId);
+    event Voted(address voter, uint proposalId);
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
    
     //modifier
@@ -105,6 +105,10 @@ contract Voting is Ownable {
     function updateStatus() public onlyOwner {
         status = uint8(status) == 5 ? WorkflowStatus.RegisteringVoters : WorkflowStatus(uint8(status)+1);
         uint8 idPreviousStatus = uint(status) == 0 ? 5 : (uint8(status)-1);
+        if (uint8(status) == 0) {
+            proposalsReset();
+            whitelistReset();
+        }
         emit WorkflowStatusChange(WorkflowStatus(idPreviousStatus), status);
     }
 

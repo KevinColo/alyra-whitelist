@@ -2,7 +2,6 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://KevinColo.github.io/whitelist-system-with-heroku/",
   "dependencies": {
     "bootstrap": "^4.5.0",
     "gh-pages": "^3.2.3",

@@ -48,37 +48,71 @@ class App extends Component {
     // récupérer la liste des propositions
     const proposals = await contract.methods.getProposals().call();
     const status = await contract.methods.getStatus().call();
-    const whitelist = await contract.methods.getWhitelist().call();
-    
+    let whitelist = await contract.methods.getWhitelist().call();
     let step, winningProposal;
-    switch(status) {
-    case '0':
-      step = 'Enregistrement des utilisateurs';
-      break;
-    case '1':
-      step = 'Début de l\'enregistrement des propositions';
-      break;
-    case '2':
-      step = 'Fin  de l\'enregistrement des propositions';
-      break;
-    case '3':
-      step = 'Début de la session de vote';
-      break;
-    case '4':
-      step = 'Fin de la session de vote';
-      break;
-    case '5':
-      if (proposals.length > 0) {
-        winningProposal = await contract.methods.getWinningProposal().call();
-      }
-      step = 'Résultat des votes';
-      break;
-    default:
-      return 'Status invalide';
-    }
+    contract.events.VoterRegistered().on('data', 
+      async () =>  {
+        whitelist = await contract.methods.getWhitelist().call();
+        this.setState({whitelist});
+      })
+      .on('error', console.error);
+    contract.events.Voted().on('data', 
+      async () =>  await this.updateProposal)
+      .on('error', console.error);
+    contract.events.ProposalRegistered().on('data', 
+      async () => await this.updateProposal)
+      .on('error', console.error);
+      contract.events.WorkflowStatusChange().on('data', 
+      async () =>  {
+        this.runInit();
+        step = this.getStep;
+        winningProposal = await this.getWinningProposal(status, proposals);
+      })
+      .on('error', console.error);
+
+    window.ethereum.on('accountsChanged', (accounts) => {
+      this.setState({accounts});
+    });
+    
+    step = this.getStep(status);
+    winningProposal = await this.getWinningProposal(status, proposals);
+    
     // Mettre à jour le state 
     this.setState({ proposals, step, whitelist, status, winningProposal });
   }; 
+
+  getWinningProposal = async(status, proposals) => {
+    const { contract } = this.state;
+    if (status === '5' && proposals.length > 0) {
+      return await contract.methods.getWinningProposal().call();
+    }
+  }
+
+  getStep = (status) => {
+    switch(status) {
+      case '0':
+        return 'Enregistrement des utilisateurs';
+      case '1':
+        return 'Début de l\'enregistrement des propositions';
+      case '2':
+        return 'Fin  de l\'enregistrement des propositions';
+      case '3':
+        return 'Début de la session de vote';
+      case '4':
+        return 'Fin de la session de vote';
+      case '5':
+        return 'Résultat des votes';
+      default:
+        return 'Status invalide';
+    }
+  }
+
+  // Mettre à jour l'affichage en fonction de l'évent
+  updateProposal = async() => {
+    const { contract } = this.state;
+    const proposals = await contract.methods.getProposals().call();
+    this.setState({proposals});
+}
 
   // Enregistrement des électeurs
   whitelist = async() => {
@@ -116,17 +150,12 @@ class App extends Component {
   updateStatus = async() => {
     const { accounts, contract} = this.state;
     await contract.methods.updateStatus().send({from: accounts[0]});
-    const status = await contract.methods.getStatus().call();
-    if (status === '0') {
-      await contract.methods.proposalsReset().send({from: accounts[0]});
-      await contract.methods.whitelistReset().send({from: accounts[0]});
-    }
     this.runInit();
   }
  
 
   render() {
-    const { proposals, status, step, whitelist, accounts, winningProposal } = this.state;
+    const { proposals, status, step, whitelist, winningProposal } = this.state;
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
