@@ -56,34 +56,35 @@ class App extends Component {
     
     const step = this.getStep(status);
     const winningProposal = await this.getWinningProposal(status, proposals);
-    this.manageEvent(status);
+    this.manageEvent();
     // Mettre à jour le state 
     this.setState({ proposals, step, whitelist, status, winningProposal });
   }; 
 
-  manageEvent = async(status) => {
+  manageEvent = async() => {
     const { contract } = this.state;
     let proposals, step, winningProposal, whitelist;
     contract.events.VoterRegistered().on('data', 
-      async () =>  {
-        whitelist = await contract.methods.getWhitelist().call();
-        this.setState({whitelist});
-      })
-      .on('error', console.error);
+    async () =>  {
+      whitelist = await contract.methods.getWhitelist().call();
+      this.setState({whitelist});
+    })
+    .on('error', console.error);
     contract.events.Voted().on('data', 
-      async () =>  {
-        proposals = await this.updateProposal();
-        this.setState({proposals});
-      })
-      .on('error', console.error);
+    async () =>  {
+      proposals = await this.updateProposal();
+      this.setState({proposals});
+    })
+    .on('error', console.error);
     contract.events.ProposalRegistered().on('data', 
-      async () => {
-        proposals = await this.updateProposal();
-        this.setState({proposals});
-      })
-      .on('error', console.error);
+    async () => {
+      proposals = await this.updateProposal();
+      this.setState({proposals});
+    })
+    .on('error', console.error);
     contract.events.WorkflowStatusChange().on('data', 
     async () =>  {
+      const status = await contract.methods.getStatus().call();
       step = this.getStep(status);
       winningProposal = await this.getWinningProposal(status, proposals);
       console.log(step);
@@ -98,6 +99,7 @@ class App extends Component {
     }
   }
 
+  //compute step of voting
   getStep = (status) => {
     switch(status) {
       case '0':
