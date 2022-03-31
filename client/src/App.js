@@ -48,8 +48,22 @@ class App extends Component {
     // récupérer la liste des propositions
     const proposals = await contract.methods.getProposals().call();
     const status = await contract.methods.getStatus().call();
-    let whitelist = await contract.methods.getWhitelist().call();
-    let step, winningProposal;
+    const whitelist = await contract.methods.getWhitelist().call();
+    
+    window.ethereum.on('accountsChanged', (accounts) => {
+      this.setState({accounts});
+    });
+    
+    const step = this.getStep(status);
+    const winningProposal = await this.getWinningProposal(status, proposals);
+    this.manageEvent(status);
+    // Mettre à jour le state 
+    this.setState({ proposals, step, whitelist, status, winningProposal });
+  }; 
+
+  manageEvent = async(status) => {
+    const { contract } = this.state;
+    let proposals, step, winningProposal, whitelist;
     contract.events.VoterRegistered().on('data', 
       async () =>  {
         whitelist = await contract.methods.getWhitelist().call();
@@ -57,33 +71,29 @@ class App extends Component {
       })
       .on('error', console.error);
     contract.events.Voted().on('data', 
-      async () =>  await this.updateProposal)
-      .on('error', console.error);
-    contract.events.ProposalRegistered().on('data', 
-      async () => await this.updateProposal)
-      .on('error', console.error);
-      contract.events.WorkflowStatusChange().on('data', 
       async () =>  {
-        this.runInit();
-        step = this.getStep;
-        winningProposal = await this.getWinningProposal(status, proposals);
+        proposals = await this.updateProposal();
+        this.setState({proposals});
       })
       .on('error', console.error);
-
-    window.ethereum.on('accountsChanged', (accounts) => {
-      this.setState({accounts});
-    });
-    
-    step = this.getStep(status);
-    winningProposal = await this.getWinningProposal(status, proposals);
-    
-    // Mettre à jour le state 
-    this.setState({ proposals, step, whitelist, status, winningProposal });
-  }; 
+    contract.events.ProposalRegistered().on('data', 
+      async () => {
+        proposals = await this.updateProposal();
+        this.setState({proposals});
+      })
+      .on('error', console.error);
+    contract.events.WorkflowStatusChange().on('data', 
+    async () =>  {
+      step = this.getStep(status);
+      winningProposal = await this.getWinningProposal(status, proposals);
+      console.log(step);
+      this.setState({step, winningProposal});
+    }).on('error', console.error  );
+  }
 
   getWinningProposal = async(status, proposals) => {
     const { contract } = this.state;
-    if (status === '5' && proposals.length > 0) {
+    if (status === '5' && proposals && proposals.length > 0) {
       return await contract.methods.getWinningProposal().call();
     }
   }
@@ -110,8 +120,7 @@ class App extends Component {
   // Mettre à jour l'affichage en fonction de l'évent
   updateProposal = async() => {
     const { contract } = this.state;
-    const proposals = await contract.methods.getProposals().call();
-    this.setState({proposals});
+    return await contract.methods.getProposals().call();
 }
 
   // Enregistrement des électeurs
